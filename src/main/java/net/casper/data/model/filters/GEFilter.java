@@ -4,73 +4,34 @@ import net.casper.data.model.CDataGridException;
 import net.casper.data.model.CDataRow;
 
 /**
- * This filter returns true, if the underlying data is greater than a particular lower bound
- *
- * @since 1.0
- * @author Jonathan Liang
+ * Greater-than (or equal) filter for numeric columns.
  */
 public class GEFilter extends CDataFilter {
 
-    /** Lower bound, all matches must be > lbound */
-    private double lbound = -1;
+    private final double lbound;
+    private final boolean inclusive;
 
-    /** True, if performing an inclusive match */
-    private boolean inclusive = false;
-
-    /**
-     * Constructs a "greater-than" numeric filter.
-     *
-     * @param columnName
-     * @param lbound
-     * @param inclusive
-     */
-    public GEFilter(String columnName, double lbound, boolean inclusive)
-            throws CDataGridException {
+    public GEFilter(String columnName, double lbound, boolean inclusive) throws CDataGridException {
         super(columnName);
         this.lbound = lbound;
         this.inclusive = inclusive;
     }
 
-    /**
-     * Performs a match for this filter
-     *
-     * @return true, if this filter matches
-     * @throws CDataGridException
-     */
     public boolean doesMatch(CDataRow row) throws CDataGridException {
         checkColumnIndexInitialized();
-
         try {
             Number numVal = (Number) row.getValue(columnIndex);
-            if (numVal == null)
-                return false;
-            double number = numVal.doubleValue();
-
-            if (inclusive) {
-                if (number >= lbound)
-                    return true;
-            } else {
-                if (number > lbound)
-                    return true;
-            }
+            if (numVal == null) return false;
+            double v = numVal.doubleValue();
+            return inclusive ? v >= lbound : v > lbound;
         } catch (Exception ex) {
-            throw new CDataGridException("Could not match row value: " + ex.toString(), ex);
+            throw new CDataGridException("Could not match row value: " + ex, ex);
         }
-        return false;
     }
 
-    /**
-     * Returns string representation of this filter
-     * @return string
-     */
+    @Override
     public String toString() {
-        StringBuffer sbuf = new StringBuffer();
-        sbuf.append("GEFilter :: where ");
-        sbuf.append(columnName).append(" (").append(columnIndex).append(") in (");
-        sbuf.append(">").append(String.valueOf(lbound)).append("), ");
-        if (inclusive)  sbuf.append("(inclusive)");
-        else sbuf.append("(exclusive)");
-        return sbuf.toString();
+        return "GEFilter :: where " + columnName + " (" + columnIndex + ") "
+                + (inclusive ? ">=" : ">") + " " + lbound;
     }
-
 }

@@ -4,83 +4,44 @@ import net.casper.data.model.CDataGridException;
 import net.casper.data.model.CDataRow;
 
 /**
- * A range filter will check an input value's numerical representation against
- * upper and lower bound values.  Note that the value of the column to compare
- * against must be a number, or the effect of this match will be unpredictable.
- *
- * @since 1.0
- * @author Jonathan Liang
+ * Numeric range filter. Matches rows where column value falls within [lbound, ubound].
  */
 public class RangeFilter extends CDataFilter {
 
-    /** Floor value (lower-bound) */
-    private double lbound = -1.0;
+    private final double lbound;
+    private final double ubound;
+    private final boolean inclusive;
 
-    /** Ceiling value (upper-bound) */
-    private double ubound = -1.0;
+    /** Inclusive range by default. */
+    public RangeFilter(String columnName, double lbound, double ubound) throws CDataGridException {
+        this(columnName, lbound, ubound, true);
+    }
 
-    /** True, if floor / ceiling values included */
-    private boolean inclusive = false;
-
-    /**
-     * Creates a range filter.  Note that all comparisons will be done via the double datatype.
-     * Its just better implemented in this manner.
-     *
-     * @param columnName
-     * @param lbound
-     * @param ubound
-     * @param inclusive
-     */
     public RangeFilter(String columnName, double lbound, double ubound, boolean inclusive)
             throws CDataGridException {
         super(columnName);
         if (lbound >= ubound)
-            throw new CDataGridException("Lower bound cannot equal upper bound.");
+            throw new CDataGridException("Lower bound must be less than upper bound.");
         this.lbound = lbound;
         this.ubound = ubound;
         this.inclusive = inclusive;
     }
 
-    /**
-     * Performs a range-based match on given row column's value.
-     *
-     * @return true, if this filter matches (and false if there are no matches)
-     * @throws CDataGridException
-     */
     public boolean doesMatch(CDataRow row) throws CDataGridException {
         checkColumnIndexInitialized();
-
         try {
             Number numVal = (Number) row.getValue(columnIndex);
-            if (numVal == null)
-                return false;
-            double number = numVal.doubleValue();
-
-            if (inclusive) {
-                if (number >= lbound && number <= ubound)
-                    return true;
-            } else {
-                if (number > lbound && number < ubound)
-                    return true;
-            }
+            if (numVal == null) return false;
+            double v = numVal.doubleValue();
+            return inclusive ? (v >= lbound && v <= ubound) : (v > lbound && v < ubound);
         } catch (Exception ex) {
-            throw new CDataGridException("Could not match row value: " + ex.toString(), ex);
+            throw new CDataGridException("Could not match row value: " + ex, ex);
         }
-        return false;
     }
 
-    /**
-     * Returns string representation of this filter
-     * @return string
-     */
+    @Override
     public String toString() {
-        StringBuffer sbuf = new StringBuffer();
-        sbuf.append("RangeFilter :: where ");
-        sbuf.append(columnName).append(" (").append(columnIndex).append(") in (");
-        sbuf.append(String.valueOf(lbound)).append("..").append(String.valueOf(ubound)).append("), ");
-        if (inclusive)  sbuf.append("inclusive.");
-        else sbuf.append("exclusive.");
-        return sbuf.toString();
+        return "RangeFilter :: where " + columnName + " (" + columnIndex + ") in ("
+                + lbound + ".." + ubound + "), " + (inclusive ? "inclusive" : "exclusive");
     }
-
 }
