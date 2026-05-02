@@ -133,10 +133,8 @@ class CDataRowSetAggregatorTest {
         @Test
         @DisplayName("should find min value in column")
         void findMin() throws CDataGridException {
-            // Note: min implementation starts at 0.0, so min(10,20,30) = 0.0 if all > 0
-            // This tests the actual behavior of the implementation
             Double result = CDataRowSetAggregator.min(rowSet, "value");
-            assertEquals(0.0, result, 0.001);
+            assertEquals(10.0, result, 0.001);
         }
 
         @Test
