@@ -7,7 +7,7 @@
 
 [![CI](https://github.com/liangjh/casperdatasets/actions/workflows/ci.yml/badge.svg)](https://github.com/liangjh/casperdatasets/actions/workflows/ci.yml)
 
-A lightweight, zero-dependency in-memory dataset framework for Java.
+A lightweight, zero-dependency in-memory dataset framework for Java and Kotlin.
 
 CasperDatasets provides a simple, thread-safe, tabular data structure with typed columns, primary key indexing, filtering, sorting, and aggregation -- all without any external dependencies.
 
@@ -22,14 +22,20 @@ CasperDatasets provides a simple, thread-safe, tabular data structure with typed
 - **Aggregation** -- sum, average, min, max, weighted sum, weighted average
 - **JDBC integration** -- load directly from a `ResultSet`, or wrap a dataset as a `ResultSet`
 - **Builder/Exporter pattern** for pluggable data sources and destinations
-- **Zero external dependencies** -- pure Java, works with Java 11+
+- **Zero external dependencies** -- pure Java, works with Java 11+ and Kotlin
 
 ## Installation
 
-### Gradle
+### Gradle (Groovy)
 
 ```groovy
 implementation 'net.casper:casperdatasets:3.0.0'
+```
+
+### Gradle (Kotlin DSL)
+
+```kotlin
+implementation("net.casper:casperdatasets:3.0.0")
 ```
 
 ### Maven
@@ -205,6 +211,60 @@ int rowsUpdated = targetContainer.merge(sourceContainer, new String[]{"id"});
 container.addNonUniqueIndex("department");
 // Subsequent equality filters on "department" will use the index
 ```
+
+## Using from Kotlin
+
+CasperDatasets is a pure Java library with full Kotlin interop -- just add the dependency and use it directly. Kotlin's concise syntax makes the API even more pleasant.
+
+### Create and query a dataset
+
+```kotlin
+import net.casper.data.model.*
+
+val columns = arrayOf("id", "name", "age", "score")
+val types = arrayOf<Class<*>>(Int::class.javaObjectType, String::class.java, Int::class.javaObjectType, Double::class.javaObjectType)
+val primaryKey = arrayOf("id")
+
+val meta = CRowMetaData(columns, types, primaryKey)
+val container = CDataCacheContainer("students", meta)
+
+container.addSingleRow(arrayOf(1, "Alice", 25, 92.5))
+container.addSingleRow(arrayOf(2, "Bob", 30, 87.3))
+container.addSingleRow(arrayOf(3, "Charlie", 22, 95.1))
+
+// Iterate
+val rowset = container.all
+while (rowset.next()) {
+    println("${rowset.getString("name")} (age ${rowset.getInt("age")}): ${rowset.getDouble("score")}")
+}
+```
+
+### Filter and aggregate
+
+```kotlin
+import net.casper.data.model.filters.*
+
+// Equality filter
+val clause = CDataFilterClause().apply {
+    addFilter(EqualsFilter("name", arrayOf("Alice", "Charlie")))
+}
+val results = container.get(clause)
+
+// Range filter (inclusive by default)
+val ageClause = CDataFilterClause().apply {
+    addFilter(RangeFilter("age", 20.0, 28.0))
+}
+val young = container.get(ageClause)
+
+// Aggregation
+val all = container.all
+val avg = CDataRowSetAggregator.average(all, "score")
+val max = CDataRowSetAggregator.max(all, "score")
+```
+
+### Note on Kotlin types
+
+When specifying column types for numeric/boolean columns, use the boxed Java types via `::class.javaObjectType` (e.g., `Int::class.javaObjectType` for `Integer.class`). For `String` and `Date` types, `::class.java` works directly since they are already reference types.
 
 ## Architecture
 
