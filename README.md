@@ -3,9 +3,7 @@
 > [!IMPORTANT]
 > This project has moved from **[github.com/casperds/casperdatasets](https://github.com/casperds/casperdatasets)** to **[github.com/liangjh/casperdatasets](https://github.com/liangjh/casperdatasets)**. Please update your bookmarks and remotes.
 
-<p align="center">
-  <img src="logo.svg" alt="CasperDatasets" width="400"/>
-</p>
+<img src="logo.svg" alt="CasperDatasets" width="400"/>
 
 [![CI](https://github.com/liangjh/casperdatasets/actions/workflows/ci.yml/badge.svg)](https://github.com/liangjh/casperdatasets/actions/workflows/ci.yml)
 
