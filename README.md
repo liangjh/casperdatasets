@@ -1,5 +1,9 @@
 # CasperDatasets
 
+<p align="center">
+  <img src="logo.svg" alt="CasperDatasets" width="400"/>
+</p>
+
 [![CI](https://github.com/liangjh/casperdatasets/actions/workflows/ci.yml/badge.svg)](https://github.com/liangjh/casperdatasets/actions/workflows/ci.yml)
 
 A lightweight, zero-dependency in-memory dataset framework for Java.
